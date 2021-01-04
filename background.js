@@ -1,3 +1,9 @@
+function syncRefreshAlarm() {
+	// creates the syndicationRefresh alarm if it doesn't already exist
+	// makes the syndicationRefresh alarm fire with the period defined by the synced syndicationRefreshTime setting
+	chrome.storage.sync.get("syndicationRefreshTime", ({syndicationRefreshTime}) => chrome.alarms.create("syndicationRefresh", {periodInMinutes: syndicationRefreshTime}));
+}
+
 function rfc822Date(rfc822) { // function that takes a date string in RFC 822's format and outputs that date in milliseconds since Unix epoch.
 	const regex822 = /(?:(\w{3}),? )?(\d\d?) (\w{3}) (\d\d)?(\d\d) (\d\d):(\d\d)(?::(\d\d))? (?:(\w{1,3})|([+-]\d\d)(\d\d))/g,
 	/* that is a regex that matches rfc822 (but also with RSS' allowance for 4-digit years)
@@ -49,3 +55,24 @@ function rfc822Date(rfc822) { // function that takes a date string in RFC 822's 
 	// turns date into format parsable by Date.parse, returns it parsed
 	return Date.parse(captured822[4]+captured822[5]+"-"+monthLookup[captured822[3]]+"-"+captured822[2]+"T"+captured822[6]+":"+captured822[7]+":"+captured822[8]+captured822[10]+":"+captured822[11]);
 }
+
+chrome.runtime.onInstalled.addListener(function() { //function that runs when extension is installed (or updated)
+	/* attempt to initialize the synced values:
+	syndicationFeeds (array of all user-selected feeds), initialized to empty array,
+	syndicationRefreshTime (how often to get an updated list of feeds, in minutes), initialized to 20,
+	syndicationLastViewed (Unix timestamp of most recent time the user viewed feeds), initialized to current time,
+	if those values do not already exist. */ 
+	chrome.storage.sync.get("syndicationFeeds", ({syndicationFeeds})=>{if (!Array.isArray(syndicationFeeds)) chrome.storage.sync.set({syndicationFeeds: []});});
+	chrome.storage.sync.get("syndicationRefreshTime", ({syndicationRefreshTime})=>{if (typeof syndicationRefreshTime !== "number") chrome.storage.sync.set({syndicationRefreshTime: 20});});
+	chrome.storage.sync.get("syndicationLastViewed", ({syndicationLastViewed})=>{if (typeof syndicationLastViewed !== "number") chrome.storage.sync.set({syndicationLastViewed: Date.now()});});
+	// syncRefreshAlarm() (see function definition for documentation)
+	syncRefreshAlarm();
+});
+
+chrome.runtime.onStartup.addListener(function() {
+	syncRefreshAlarm(); //run this on every startup since alarms aren't persistent
+});
+
+chrome.runtime.onMessage.addListener(function(messageObject, sender, response) { //message function for a message received from elsewhere in the extension
+	if (messageObject.message=="syncRefreshAlarm") syncRefreshAlarm(); // if the "message" key's value is "syncRefreshAlarm", run the syncRefreshAlarm function
+});
