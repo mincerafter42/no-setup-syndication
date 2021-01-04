@@ -7,6 +7,10 @@
 		"storage",
 		"alarms"
 	],
+	"optional_permissions": [
+		"https://*/",
+		"http://*/"
+	],
 	"browser_action": {
 		"default_popup": "popup.html",
 		"browser_style": true,
