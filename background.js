@@ -2,6 +2,7 @@ function syncRefreshAlarm() {
 	// creates the syndicationRefresh alarm if it doesn't already exist
 	// makes the syndicationRefresh alarm fire with the period defined by the synced syndicationRefreshTime setting
 	chrome.storage.sync.get("syndicationRefreshTime", ({syndicationRefreshTime}) => {chrome.alarms.create("syndicationRefresh", {periodInMinutes: syndicationRefreshTime})});
+	console.log("Synchronized the syndicationRefreshTime alarm"); // gonna use this to find when the impossible error occurs
 }
 
 function rfc822Date(rfc822) { // function that takes a date string in RFC 822's format and outputs that date in milliseconds since Unix epoch.
@@ -63,10 +64,11 @@ chrome.runtime.onInstalled.addListener(function() { //function that runs when ex
 	syndicationLastViewed (Unix timestamp of most recent time the user viewed feeds), initialized to current time,
 	if those values do not already exist. */ 
 	chrome.storage.sync.get("syndicationFeeds", ({syndicationFeeds})=>{if (!Array.isArray(syndicationFeeds)) chrome.storage.sync.set({syndicationFeeds: []});});
-	chrome.storage.sync.get("syndicationRefreshTime", ({syndicationRefreshTime})=>{if (typeof syndicationRefreshTime !== "number") chrome.storage.sync.set({syndicationRefreshTime: 20});});
+	chrome.storage.sync.get("syndicationRefreshTime", ({syndicationRefreshTime})=>{
+		if (typeof syndicationRefreshTime !== "number") chrome.storage.sync.set({syndicationRefreshTime: 20}, ()=>syncRefreshAlarm()); // syncRefreshAlarm must be run after syndicationRefreshTime is created
+		else syncRefreshAlarm(); // suncRefreshAlarm must be run whether or not syndicationRefreshTime was initialized here
+	});
 	chrome.storage.sync.get("syndicationLastViewed", ({syndicationLastViewed})=>{if (typeof syndicationLastViewed !== "number") chrome.storage.sync.set({syndicationLastViewed: Date.now()});});
-	// syncRefreshAlarm() (see function definition for documentation)
-	syncRefreshAlarm();
 });
 
 chrome.runtime.onStartup.addListener(function() {
