@@ -20,7 +20,7 @@ function allFeedContents(syndicationFeeds) {
 	*/
 	let feeds = []; // feeds is an empty array that will be filled with Promises for every feed
 	for (let feed=0;feed<syndicationFeeds.length;feed++) { // iterate through every feed
-		feeds.push(xmlPromise(syndicationFeeds[feed].url)); // add a Promise to get contents of the feed (to do: use then() to add a function parsing relevant parts of the feed into an object)
+		feeds.push(xmlPromise(syndicationFeeds[feed].url).then(parseFeed)); // add a Promise to get contents of the feed, then parse XML into an object
 	}
 	return Promise.allSettled(feeds); // return a Promise combining all the Promises
 }
@@ -42,7 +42,6 @@ function parseFeed(feedXML) {
 	else { // there is a document
 		switch (feedXML.documentElement.tagName) { // check the root element's tag name
 		case "rss": // it's "rss", meaning now we know this is an RSS feed
-			// gotta add code here to parse the rss feed
 			const items = feedXML.getElementsByTagName("item") // sets "items" to an iterable of all <item> elements in the RSS feed
 			let parsedItems = []; // parsedItems will be filled with parsed contents of the <item> elements
 			for (let item=0;item<items.length;item++) { // iterate through items
@@ -52,9 +51,10 @@ function parseFeed(feedXML) {
 				if (optionalChild("link")) parsedItem.link = optionalChild("link").textContent; // if <link> element exists, item's link is its content
 				if (optionalChild("pubDate")) parsedItem.pubDate = rfc822Date(optionalChild("pubDate").textContent); // if <pubDate> element exists, item's pubDate is its content parsed by rfc822Date
 				if (optionalChild("description")) parsedItem.description = optionalChild("description").textContent; // if <description> element exists, item's description is its content
+				// lot of repetition there, maybe it could be condensed
 				parsedItems.push(parsedItem); // adds item to array of items
 			}
-			return parsedItems; // returns array of items parsed
+			return {items: parsedItems}; // returns array of items parsed, in an object (for future expansion)
 		default: // tag name is not "rss"
 			throw "Unknown feed format"; // so throw error
 		}
@@ -136,5 +136,8 @@ chrome.runtime.onMessage.addListener(function(messageObject, sender, respond) { 
 	case "syncRefreshAlarm":
 		syncRefreshAlarm(); // if the "message" key's value is "syncRefreshAlarm", run the syncRefreshAlarm function
 		break;
+	case "getFeedContents": // if the "message" key's value is "getFeedContents",
+		chrome.storage.sync.get("syndicationFeeds", ({syndicationFeeds})=>{allFeedContents(syndicationFeeds).then(respond)}); // gets syndicationFeeds from storage and use it to respond with the contents of the feeds
+		return true; // must return true to be asynchronous
 	}
 });

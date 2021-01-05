@@ -17,3 +17,16 @@ document.getElementById("feedAddConfirm").addEventListener("click", function() {
 	});
 	document.getElementById("feedAdder").style.display="none"; // hide feedAdder
 });
+
+chrome.runtime.sendMessage({message: "getFeedContents"}, {}, (response)=>{ // send the message {message: "getFeedContents"}
+	/* function parsing response to that message, should be the result of a Promise.allSettled()
+	need to read feeds from promises, put items in chronological order, and display items */
+	let combinedItems=[]; // combinedItems will fill with items from all feeds
+	for (let feed=0;feed<response.length;feed++) { // iterate through every Promise in the array
+		if (response[feed].status === "fulfilled") { // only need to pay attention if the promise is fulfilled
+			combinedItems.push(...response[feed].value.items); // push items from this feed into combinedItems
+		}
+	}
+	combinedItems.sort((item1, item2)=>item2.pubDate-item1.pubDate); // sort items by pubDate, more recent items first
+	// now we just need to display the items in combinedItems
+});
