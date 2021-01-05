@@ -14,6 +14,6 @@ This extension is still under development. It has not yet met all the goals and 
 
 ## Installation instructions
 ### Installation instructions for Chromium
-Go to <chrome://extenstions>. Enable **Developer Mode**. Click **Load Unpacked** and select an uncompressed folder containing these files.
+Go to <chrome://extensions>. Enable **Developer Mode**. Click **Load Unpacked** and select an uncompressed folder containing these files.
 ### Temporary installation instructions for Firefox
 Go to <about:debugging#/runtime/this-firefox>. Click **Load temporary add-on** and select the `manifest.json` file.
