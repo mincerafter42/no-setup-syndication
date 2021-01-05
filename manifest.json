@@ -3,11 +3,10 @@
 	"version": "0",
 	"name": "No Setup Syndication",
 	"short_name": "NSS",
+	"description": "Designed with the goal of being a feed reader that works immediately upon installation. This extension needs your permission to access all websites. It will only use this to read the feeds that you specify.",
 	"permissions": [
 		"storage",
-		"alarms"
-	],
-	"optional_permissions": [
+		"alarms",
 		"https://*/",
 		"http://*/"
 	],

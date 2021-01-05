@@ -1,7 +1,7 @@
 function syncRefreshAlarm() {
 	// creates the syndicationRefresh alarm if it doesn't already exist
 	// makes the syndicationRefresh alarm fire with the period defined by the synced syndicationRefreshTime setting
-	chrome.storage.sync.get("syndicationRefreshTime", ({syndicationRefreshTime}) => chrome.alarms.create("syndicationRefresh", {periodInMinutes: syndicationRefreshTime}));
+	chrome.storage.sync.get("syndicationRefreshTime", ({syndicationRefreshTime}) => {chrome.alarms.create("syndicationRefresh", {periodInMinutes: syndicationRefreshTime})});
 }
 
 function rfc822Date(rfc822) { // function that takes a date string in RFC 822's format and outputs that date in milliseconds since Unix epoch.
