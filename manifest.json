@@ -23,5 +23,8 @@
 	},
 	"background": {
 		"scripts": ["background.js"]
+	},
+	"browser_specific_settings": {
+		"gecko": {"id": "nss@mincerafter42.github.io"}
 	}
 }

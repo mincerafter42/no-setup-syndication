@@ -8,6 +8,13 @@ document.getElementById("save").addEventListener("click", function() {
 	chrome.storage.sync.set({syndicationRefreshTime: Number(document.getElementById("syndicationRefreshTime").value)}, ()=>{chrome.runtime.sendMessage({message:"syncRefreshAlarm"})});
 });
 
+chrome.storage.sync.get("syndicationFeeds", ({syndicationFeeds})=>{ // get array of all feeds
+	for (let feed=0;feed<syndicationFeeds.length;feed++) { // iterate the feed variable through all the feeds
+		let feedSettings = document.createElement("div");
+		
+	}
+});
+
 chrome.permissions.getAll(function(perms) {
 	document.body.appendChild(document.createTextNode(JSON.stringify(perms)));
 }); //debug: print extension's permissions

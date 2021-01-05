@@ -1,8 +1,64 @@
+/*
+to do:
+create ability to add and remove feeds from options page
+make feed contents display when clicked
+make badge show number of new posts (updating every time syndicationRefresh fires)
+add error checking
+make visually appealing
+*/
+
 function syncRefreshAlarm() {
 	// creates the syndicationRefresh alarm if it doesn't already exist
 	// makes the syndicationRefresh alarm fire with the period defined by the synced syndicationRefreshTime setting
 	chrome.storage.sync.get("syndicationRefreshTime", ({syndicationRefreshTime}) => {chrome.alarms.create("syndicationRefresh", {periodInMinutes: syndicationRefreshTime})});
-	console.log("Synchronized the syndicationRefreshTime alarm"); // gonna use this to find when the impossible error occurs
+}
+
+function allFeedContents(syndicationFeeds) {
+	/*
+	gets and returns contents of all feeds listed in syndicationFeeds
+	syndicationFeeds is an array of feeds where each feed is formatted as {url: <feed's URL>}
+	*/
+	let feeds = []; // feeds is an empty array that will be filled with Promises for every feed
+	for (let feed=0;feed<syndicationFeeds.length;feed++) { // iterate through every feed
+		feeds.push(xmlPromise(syndicationFeeds[feed].url)); // add a Promise to get contents of the feed (to do: use then() to add a function parsing relevant parts of the feed into an object)
+	}
+	return Promise.allSettled(feeds); // return a Promise combining all the Promises
+}
+
+function xmlPromise(url) { //returns a Promise to get the XML content from the given URL
+	return new Promise(function(resolve) { //creating Promise
+		let request = new XMLHttpRequest(); //creating XMLHttpRequest
+		request.open("GET", url); // request will get data from url
+		request.onreadystatechange = function() {
+			if (request.readyState === XMLHttpRequest.DONE) resolve(request.responseXML); //when the request is done, resolve the Promise with the response XML
+		}
+		request.send(); // send request
+	});
+}
+
+function parseFeed(feedXML) {
+	// take as input a feed in XML format, return relevant data as an object. Assumes input is the responseXML attribute of an XMLHttpRequest
+	if (feedXML === null) throw "No XML given to parse"; // if responseXML is not a document it will always be null, in this case throw an error
+	else { // there is a document
+		switch (feedXML.documentElement.tagName) { // check the root element's tag name
+		case "rss": // it's "rss", meaning now we know this is an RSS feed
+			// gotta add code here to parse the rss feed
+			const items = feedXML.getElementsByTagName("item") // sets "items" to an iterable of all <item> elements in the RSS feed
+			let parsedItems = []; // parsedItems will be filled with parsed contents of the <item> elements
+			for (let item=0;item<items.length;item++) { // iterate through items
+				const optionalChild = tagName => items[item].getElementsByTagName(tagName)[0]; // this code will be used a lot, finds first child of the item with given tagName
+				let parsedItem = {} // object that will be filled with item's attributes
+				if (optionalChild("title")) parsedItem.title = optionalChild("title").textContent; // if <title> element exists, item's title is its content
+				if (optionalChild("link")) parsedItem.link = optionalChild("link").textContent; // if <link> element exists, item's link is its content
+				if (optionalChild("pubDate")) parsedItem.pubDate = rfc822Date(optionalChild("pubDate").textContent); // if <pubDate> element exists, item's pubDate is its content parsed by rfc822Date
+				if (optionalChild("description")) parsedItem.description = optionalChild("description").textContent; // if <description> element exists, item's description is its content
+				parsedItems.push(parsedItem); // adds item to array of items
+			}
+			return parsedItems; // returns array of items parsed
+		default: // tag name is not "rss"
+			throw "Unknown feed format"; // so throw error
+		}
+	}
 }
 
 function rfc822Date(rfc822) { // function that takes a date string in RFC 822's format and outputs that date in milliseconds since Unix epoch.
@@ -75,6 +131,10 @@ chrome.runtime.onStartup.addListener(function() {
 	syncRefreshAlarm(); //run this on every startup since alarms aren't persistent
 });
 
-chrome.runtime.onMessage.addListener(function(messageObject, sender, response) { //message function for a message received from elsewhere in the extension
-	if (messageObject.message=="syncRefreshAlarm") syncRefreshAlarm(); // if the "message" key's value is "syncRefreshAlarm", run the syncRefreshAlarm function
+chrome.runtime.onMessage.addListener(function(messageObject, sender, respond) { //message function for a message received from elsewhere in the extension
+	switch (messageObject.message) {
+	case "syncRefreshAlarm":
+		syncRefreshAlarm(); // if the "message" key's value is "syncRefreshAlarm", run the syncRefreshAlarm function
+		break;
+	}
 });
