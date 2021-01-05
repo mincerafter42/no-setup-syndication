@@ -29,4 +29,15 @@ chrome.runtime.sendMessage({message: "getFeedContents"}, {}, (response)=>{ // se
 	}
 	combinedItems.sort((item1, item2)=>item2.pubDate-item1.pubDate); // sort items by pubDate, more recent items first
 	// now we just need to display the items in combinedItems
+	for (let item=0;item<combinedItems.length;item++) { // iterate through every item in combinedItems
+		let itemDisplay = document.createElement("div"); // make a div
+		let itemTitle = document.createElement("h2");
+		itemTitle.textContent = combinedItems[item].title;
+		itemDisplay.appendChild(itemTitle); // make an h2 with the item's title and put it in the div
+		let itemDescription = document.createElement("div");
+		itemDescription.innerHTML = combinedItems[item].description;
+		itemDisplay.appendChild(itemDescription); // make a div with the item's description and put it in the div
+		document.getElementById("feed").appendChild(itemDisplay); // add the div to the "feed" element
+		// to do: separate items by date
+	}
 });
