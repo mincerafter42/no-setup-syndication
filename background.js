@@ -54,7 +54,12 @@ function parseFeed(feedXML) {
 				// lot of repetition there, maybe it could be condensed
 				parsedItems.push(parsedItem); // adds item to array of items
 			}
-			return {items: parsedItems}; // returns array of items parsed, in an object (for future expansion)
+			let channel = {items: parsedItems}; // parsedItems is now the "items" attribute of the "channel" object, which will be returned at the end
+			channel.location = feedXML.documentURI.href; // adds channel URL to feed
+			channel.title = feedXML.getElementsByTagName("title")[0].textContent; // this will not always work, specification allows first <title> to not be the required child of <channel>
+			channel.description = feedXML.getElementsByTagName("description")[0].textContent; // same problem as above
+			// to do: add other attributes from <channel>
+			return channel;
 		default: // tag name is not "rss"
 			throw "Unknown feed format"; // so throw error
 		}

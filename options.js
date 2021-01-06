@@ -8,25 +8,31 @@ document.getElementById("save").addEventListener("click", function() {
 	chrome.storage.sync.set({syndicationRefreshTime: Number(document.getElementById("syndicationRefreshTime").value)}, ()=>{chrome.runtime.sendMessage({message:"syncRefreshAlarm"})});
 });
 
-chrome.storage.sync.get("syndicationFeeds", ({syndicationFeeds})=>{ // get array of all feeds
-	for (let feed=0;feed<syndicationFeeds.length;feed++) { // iterate the feed variable through all the feeds
-		let feedSettings = document.createElement("div");
-		
+/* here we need to get the feeds and show options.  */
+chrome.runtime.sendMessage({message:"getFeedContents"}, {}, (response)=>{ // make the background script get feed contents, then
+	for (let feed=0;feed<response.length;feed++) { // iterate through every feed
+		let feedSettings = document.createElement("div"); // make a div. It will contain the feed name, description, and the Remove button.
+		let feedTitle = document.createElement("h2"); // this h2 element will contain the title (unless feed failed to load)
+		let feedDescription = document.createElement("p"); // this p element will contain the description (unless feed failed to load)
+		if (response[feed].status === "rejected") { // but if the feed failed to load,
+			feedTitle.textContent = "Error getting feed"; // the title is set to a static error message
+			feedDescription.textContent = response[feed].reason; // and the description is set to the error given
+		} else {
+			feedTitle.textContent = response[feed].value.title; // the feed loaded, set the h2's text to feed's title
+			feedDescription.innerHTML = response[feed].value.description; // and description's innerHTML
+		}
+		feedSettings.appendChild(feedTitle); // append title to div
+		feedSettings.appendChild(feedDescription); // append description to div
+		let removeButton = document.createElement("button"); // make the Remove button
+		removeButton.textContent = "Remove"; // set the button's text to "Remove"
+		removeButton.addEventListener("click", function() { // when it's clicked
+			chrome.storage.sync.get("syndicationFeeds", ({syndicationFeeds})=>{ // get the syndicationFeeds setting
+				syndicationFeeds.splice(feed, 1); // remove the feed from syndicationFeeds
+				chrome.storage.sync.set({syndicationFeeds: syndicationFeeds}); // and sync it
+			});
+			document.getElementById("feeds").removeChild(feedSettings); // and also remove the div from the list of feeds
+		});
+		feedSettings.appendChild(removeButton); // add button to div
+		document.getElementById("feeds").appendChild(feedSettings); // add div to list of feeds
 	}
-});
-
-chrome.permissions.getAll(function(perms) {
-	document.body.appendChild(document.createTextNode(JSON.stringify(perms)));
-}); //debug: print extension's permissions
-
-document.getElementById("debugRequest").addEventListener("click", function() {
-	console.log("Request not created");
-	let request = new XMLHttpRequest();
-	console.log("Request created");
-	request.open("GET", "https://xkcd.com/rss.xml");
-	console.log("Request opened");
-	request.onload = function() {console.log("Request loaded");console.log(request.responseXML)}
-	console.log("Request onload function set");
-	request.send();
-	console.log("Sent request");
 });
