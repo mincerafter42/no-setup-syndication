@@ -31,12 +31,24 @@ chrome.runtime.sendMessage({message: "getFeedContents"}, {}, (response)=>{ // se
 	// now we just need to display the items in combinedItems
 	for (let item=0;item<combinedItems.length;item++) { // iterate through every item in combinedItems
 		let itemDisplay = document.createElement("div"); // make a div
-		let itemTitle = document.createElement("h2");
-		itemTitle.textContent = combinedItems[item].title;
-		itemDisplay.appendChild(itemTitle); // make an h2 with the item's title and put it in the div
-		let itemDescription = document.createElement("div");
+		let itemTitle = document.createElement("h2"); // make an h2 with the item's title and put it in the div
+		if (combinedItems[item].link) {
+			let itemLink = document.createElement("a");
+			itemLink.target = "_blank";
+			itemLink.href = combinedItems[item].link;
+			itemLink.textContent = combinedItems[item].title;
+			itemTitle.appendChild(itemLink);
+		}
+		else itemTitle.textContent = combinedItems[item].title;
+		itemDisplay.appendChild(itemTitle);
+		let itemDescription = document.createElement("div"); // make a div with the item's description and put it in the div
 		itemDescription.innerHTML = combinedItems[item].description;
-		itemDisplay.appendChild(itemDescription); // make a div with the item's description and put it in the div
+		let itemDescriptionLinks = itemDescription.getElementsByTagName("a"); // getting all the links in the description to make sure they open in new tabs and are absolute URLs
+		for (const link of itemDescriptionLinks) { // iterate through links (any order)
+			link.target = "_blank"; // link will open in new tab
+			if (link.origin === window.origin) link.href = new URL(link.pathname+link.search+link.hash, combinedItems[item].link); // if the origin is the same as the extension window, assume link is relative and fix
+		}
+		itemDisplay.appendChild(itemDescription);
 		document.getElementById("feed").appendChild(itemDisplay); // add the div to the "feed" element
 		// to do: separate items by date
 	}
