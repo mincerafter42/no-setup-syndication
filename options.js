@@ -13,7 +13,7 @@ chrome.runtime.sendMessage({message:"getFeedContents"}, {}, ({response})=>{ // m
 	for (let feed=0;feed<response.length;feed++) { // iterate through every feed
 		let feedSettings = document.createElement("div"); // make a div. It will contain the feed name, description, and the Remove button.
 		let feedTitle = document.createElement("h2"); // this h2 element will contain the title (unless feed failed to load)
-		let feedDescription = document.createElement("p"); // this p element will contain the description (unless feed failed to load)
+		let feedDescription = document.createElement("div"); // this div element will contain the description (unless feed failed to load)
 		if (response[feed].status === "rejected") { // but if the feed failed to load,
 			feedTitle.textContent = "Error getting feed"; // the title is set to a static error message
 			feedDescription.textContent = response[feed].reason; // and the description is set to the error given

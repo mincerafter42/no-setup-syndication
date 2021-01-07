@@ -24,9 +24,10 @@ chrome.runtime.sendMessage({message: "getFeedContents"}, {}, ({response})=>{ // 
 	let combinedItems=[]; // combinedItems will fill with items from all feeds
 	for (let feed=0;feed<response.length;feed++) { // iterate through every Promise in the array
 		if (response[feed].status === "fulfilled") { // only need to pay attention if the promise is fulfilled
-			combinedItems.push(...response[feed].value.items); // push items from this feed into combinedItems
+			combinedItems.push(...response[feed].value.item); // push items from this feed into combinedItems
 		}
 	}
+	console.log(combinedItems)
 	combinedItems.sort((item1, item2)=>item2.pubDate-item1.pubDate); // sort items by pubDate, more recent items first
 	// now we just need to display the items in combinedItems
 	for (let item=0;item<combinedItems.length;item++) { // iterate through every item in combinedItems

@@ -38,28 +38,27 @@ function xmlPromise(url) { //returns a Promise to get the XML content from the g
 
 function parseFeed(feedXML) {
 	// take as input a feed in XML format, return relevant data as an object. Assumes input is the responseXML attribute of an XMLHttpRequest
+	function matchingChildren(xml, childrenToFind) { // given an XML element and an object listing child names, finds element's immediate children with those names and returns an object with filters applied to children
+		let result = {}; // will contain all the stuff at the end
+		for (let element in childrenToFind) { // iterate through names of items in childrenToFind
+			const matching = Array.from(xml.children).filter(value=>element==value.tagName); // set "matching" to all immediate matching children
+			if (matching.length>0) { // if there are any that match
+				if (typeof childrenToFind[element]==="object") result[element] = matchingChildren(matching[0],childrenToFind[element]); // if the value is an object, it's an object listing children of *this* element to find
+				else if (typeof childrenToFind[element]==="function") result[element] = childrenToFind[element](matching); // if the value is a function, run the function on the array of matching elements
+				else result[element] = matching[0].textContent; // else get a single element's text content
+			}
+		}
+		return result;
+	}
 	if (feedXML === null) throw "No XML given to parse"; // if responseXML is not a document it will always be null, in this case throw an error
 	else { // there is a document
 		switch (feedXML.documentElement.tagName) { // check the root element's tag name
 		case "rss": // it's "rss", meaning now we know this is an RSS feed
-			const items = feedXML.getElementsByTagName("item") // sets "items" to an iterable of all <item> elements in the RSS feed
-			let parsedItems = []; // parsedItems will be filled with parsed contents of the <item> elements
-			for (let item=0;item<items.length;item++) { // iterate through items
-				const optionalChild = tagName => items[item].getElementsByTagName(tagName)[0]; // this code will be used a lot, finds first child of the item with given tagName
-				let parsedItem = {} // object that will be filled with item's attributes
-				if (optionalChild("title")) parsedItem.title = optionalChild("title").textContent; // if <title> element exists, item's title is its content
-				if (optionalChild("link")) parsedItem.link = optionalChild("link").textContent; // if <link> element exists, item's link is its content
-				if (optionalChild("pubDate")) parsedItem.pubDate = rfc822Date(optionalChild("pubDate").textContent); // if <pubDate> element exists, item's pubDate is its content parsed by rfc822Date
-				if (optionalChild("description")) parsedItem.description = optionalChild("description").textContent; // if <description> element exists, item's description is its content
-				// lot of repetition there, maybe it could be condensed
-				parsedItems.push(parsedItem); // adds item to array of items
+			const childrenToFind = {title:0, description:0, link:0, // these are the children we're looking for (in <channel>)
+			image: {url:0, title:0, link:0, description:0}, 
+			item: matching=>matching.map(item=>matchingChildren(item,{title:0,link:0,description:0,pubDate:([matching])=>rfc822Date(matching.textContent),enclosure:([matching])=>{url: matching.url}}))
 			}
-			let channel = {items: parsedItems}; // parsedItems is now the "items" attribute of the "channel" object, which will be returned at the end
-			channel.location = feedXML.documentURI.href; // adds channel URL to feed
-			channel.title = feedXML.getElementsByTagName("title")[0].textContent; // this will not always work, specification allows first <title> to not be the required child of <channel>
-			channel.description = feedXML.getElementsByTagName("description")[0].textContent; // same problem as above
-			// to do: add other attributes from <channel>
-			return channel;
+			return matchingChildren(feedXML.documentElement, {channel: childrenToFind}).channel; // <channel> exists but we can just return its contents
 		default: // tag name is not "rss"
 			throw "Unknown feed format"; // so throw error
 		}
