@@ -142,7 +142,7 @@ chrome.runtime.onMessage.addListener(function(messageObject, sender, respond) { 
 		syncRefreshAlarm(); // if the "message" key's value is "syncRefreshAlarm", run the syncRefreshAlarm function
 		break;
 	case "getFeedContents": // if the "message" key's value is "getFeedContents",
-		chrome.storage.sync.get("syndicationFeeds", ({syndicationFeeds})=>{allFeedContents(syndicationFeeds).then(respond)}); // gets syndicationFeeds from storage and use it to respond with the contents of the feeds
+		chrome.storage.sync.get(["syndicationFeeds", "syndicationLastViewed"], ({syndicationFeeds, syndicationLastViewed})=>{allFeedContents(syndicationFeeds).then(value=>respond({response: value, lastViewed: syndicationLastViewed}))}); // gets syndicationFeeds from storage and use it to respond with the contents of the feeds
 		return true; // must return true to be asynchronous
 	}
 });

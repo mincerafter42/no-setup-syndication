@@ -18,7 +18,7 @@ document.getElementById("feedAddConfirm").addEventListener("click", function() {
 	document.getElementById("feedAdder").style.display="none"; // hide feedAdder
 });
 
-chrome.runtime.sendMessage({message: "getFeedContents"}, {}, (response)=>{ // send the message {message: "getFeedContents"}
+chrome.runtime.sendMessage({message: "getFeedContents"}, {}, ({response})=>{ // send the message {message: "getFeedContents"}
 	/* function parsing response to that message, should be the result of a Promise.allSettled()
 	need to read feeds from promises, put items in chronological order, and display items */
 	let combinedItems=[]; // combinedItems will fill with items from all feeds

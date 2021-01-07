@@ -9,7 +9,7 @@ document.getElementById("save").addEventListener("click", function() {
 });
 
 /* here we need to get the feeds and show options.  */
-chrome.runtime.sendMessage({message:"getFeedContents"}, {}, (response)=>{ // make the background script get feed contents, then
+chrome.runtime.sendMessage({message:"getFeedContents"}, {}, ({response})=>{ // make the background script get feed contents, then
 	for (let feed=0;feed<response.length;feed++) { // iterate through every feed
 		let feedSettings = document.createElement("div"); // make a div. It will contain the feed name, description, and the Remove button.
 		let feedTitle = document.createElement("h2"); // this h2 element will contain the title (unless feed failed to load)
