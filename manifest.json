@@ -12,8 +12,11 @@
 	],
 	"browser_action": {
 		"default_popup": "popup.html",
-		"browser_style": true,
-		"chrome_style": true
+		"default_icon": {
+			"16": "button/4.png",
+			"32": "button/5.png",
+			"64": "button/6.png"
+		}
 	},
 	"options_ui": {
 		"page": "options.html",
