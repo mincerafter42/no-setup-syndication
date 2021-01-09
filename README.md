@@ -12,6 +12,8 @@ The goals for this extension are:
 
 This extension is still under development. It has not yet met all the goals and is not ready for general use. I plan to distribute the extension for Chromium (and Firefox if I meet that goal) when it is ready for general use.
 
+Contents of the /icons folder are used under the Mozilla Public License.
+
 ## Installation instructions
 ### Installation instructions for Chromium
 Go to <chrome://extensions>. Enable **Developer Mode**. Click **Load Unpacked** and select an uncompressed folder containing these files.

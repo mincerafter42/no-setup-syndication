@@ -1,0 +1,99 @@
+body {
+	margin: 0;
+	padding: 0;
+	font-family: sans-serif;
+	font-size: 15px;
+	background-color: #ededed;
+	min-width: 750px;
+	min-height: 600px;
+}
+h2 {
+	float: left;
+	margin: 0;
+}
+a {
+	color: #0060df;
+	text-decoration: none;
+}
+a:hover, a:focus, a:active {
+	text-decoration: underline;
+}
+#controls {
+	position: sticky;
+	top: 0;
+	background-color: #f9f9f9;
+	padding: 8px;
+	overflow: hidden;
+	color: #0c0c0c;
+}
+.ghost {
+	color: rgba(12, 12, 12, 0.8);
+	border-radius: 2px;
+	padding: 8px;
+	background-color: transparent;
+	border: 0;
+}
+.ghost:hover {
+	background-color: rgba(12, 12, 12, 0.1);
+}
+.ghost:active {
+	background-color: rgba(12, 12, 12, 0.2);
+}
+.ghost:focus {
+	box-shadow: 0 0 0 1px #0a84ff inset, 0 0 0 1px #0a84ff, 0 0 0 4px rgba(10, 132, 255, 0.3);
+}
+.ghost img {
+	vertical-align: bottom;
+}
+#options {
+	float: left;
+}
+#add {
+	float: right;
+}
+#feedAdder {
+	clear: both;
+	text-align: center;
+}
+#feedAddURL {
+	border-radius: 2px;
+	padding: 6px;
+	border: 2px solid rgba(12, 12, 12, 0.2);
+	color: #0c0c0c;
+}
+#feed {
+	padding: 0 12px;
+}
+.item {
+	margin: 12px 0;
+}
+.meta {
+	padding: 16px;
+	border-radius: 8px 8px 0 0;
+	overflow: hidden;
+}
+.unread .meta {
+	background-color: #b1b1b1;
+	color: #000;
+}
+.read .meta {
+	background-color: #d7d7d7;
+	color: #4a4a4a;
+}
+.read a {
+	color: #0060df99;
+}
+.time {
+	float: right;
+}
+.description {
+	padding: 12px;
+	border-radius: 0 0 8px 8px;
+	background-color: #fefefe;
+}
+.unread .description {
+	color: #000;
+}
+.read .description {
+	color: #0009;
+}

@@ -1,70 +1,19 @@
 <!doctype html>
 <html>
 	<head>
-		<style>
-			body {
-				margin: 0;
-				padding: 0;
-				width: 750px;
-				height: 600px;
-			}
-			h2 {
-				float: left;
-				margin: 0;
-			}
-			#controls {
-				position: sticky;
-				top: 0;
-				background-color: #bbb;
-				padding: 10px;
-				overflow: hidden;
-			}
-			#options {
-				float: left;
-			}
-			#add {
-				float: right;
-			}
-			#feedAdder {
-				clear: both;
-				text-align: center;
-			}
-			#feed {
-				padding: 0 15px;
-			}
-			.item {
-				margin: 15px 0;
-			}
-			.meta {
-				border: 1px solid #ddd;
-				background-color: #ddd;
-				padding: 15px;
-				border-radius: 15px 15px 0 0;
-				overflow: hidden;
-			}
-			.time {
-				float: right;
-			}
-			.description {
-				border: 1px solid #ddd;
-				padding: 15px;
-				border-radius: 0 0 15px 15px;
-			}
-		</style>
+		<link rel="stylesheet" href="popup.css">
 	</head>
 	<body>
-		<div id="main">
 		<div id="controls">
-			<button id="options" type="button">Options</button>
-			<button id="add" type="button">Add Feed</button>
+			<button id="options" class="ghost" type="button"><img src="/icons/options.svg" alt="Options" /></button>
+			<button id="add" class="ghost" type="button"><img src="/icons/new.svg" alt="Add Feed" /></button>
 			<div id="feedAdder" style="display:none">
 				<label>Feed URL <input type="text" id="feedAddURL" placeholder="https://example.com/feed"></label>
-				<button type="button" id="feedAddCancel">Cancel</button>
-				<button type="button" id="feedAddConfirm">Add feed</button>
+				<button type="button" id="feedAddCancel" class="ghost"><img src="/icons/cancel.svg" alt="Cancel"></button>
+				<button type="button" id="feedAddConfirm" class="ghost"><img src="/icons/confirm.svg" alt="Confirm"></button>
 			</div>
 		</div>
 		<div id="feed"></div>
-		</div>
 		<script src="popup.js"></script>
 	</body>
 </html>
