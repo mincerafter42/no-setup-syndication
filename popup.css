@@ -51,6 +51,12 @@ a:hover, a:focus, a:active {
 .float-right {
 	float: right;
 }
+#statusbar {
+	font-size: 17px;
+	font-weight: bold;
+	line-height: 32px;
+	text-align: center;
+}
 #feedAdder {
 	clear: both;
 	text-align: center;
@@ -69,34 +75,29 @@ a:hover, a:focus, a:active {
 	border-radius: 8px;
 	background-color: #d7d7d7;
 }
-/*.item.unread {
-	background-color: #b1b1b1;
-	color: #000;
-}
-.item.read {
-	background-color: #d7d7d7;
-	color: #4a4a4a;
-}*/
 .meta {
 	padding: 4px;
 	border-radius: 8px 8px 0 0;
 	overflow: hidden;
 }
+.unread .meta {
+	color: #000;
+}
+.read .meta {
+	color: #000a;
+}
 .meta h2 {
 	font-size: 22px;
 	line-height: 32px;
 }
-/*.unread .meta {
-
-}
-.read .meta {
-
-}*/
 .read a {
-	color: #0060df99;
+	color: #0060dfaa;
 }
 .time {
 	float: right;
+	text-align: right;
+	font-size: 13px;
+	line-height: 16px;
 }
 .description {
 	padding: 12px;
@@ -107,5 +108,5 @@ a:hover, a:focus, a:active {
 	color: #000;
 }
 .read .description {
-	color: #0009;
+	color: #000a;
 }

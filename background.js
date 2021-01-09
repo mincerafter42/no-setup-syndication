@@ -15,6 +15,7 @@ function syncRefreshAlarm(now) {
 		if (now) alarmSettings.when = Date.now();
 		chrome.alarms.create("syndicationRefresh", alarmSettings);
 	});
+	chrome.browserAction.setBadgeBackgroundColor({color: "#421E07"}); // set badge background color too
 }
 
 chrome.alarms.onAlarm.addListener(alarm=>{
@@ -140,13 +141,15 @@ chrome.runtime.onInstalled.addListener(function() { //function that runs when ex
 	syndicationFeeds (array of all user-selected feeds), initialized to empty array,
 	syndicationRefreshTime (how often to get an updated list of feeds, in minutes), initialized to 20,
 	syndicationLastViewed (Unix timestamp of most recent time the user viewed feeds), initialized to current time,
+	syndicationDateFormat (Intl.DateTimeFormat-formatted date display options), initialized to show full year, short month name, numeric day
 	if those values do not already exist. */ 
-	chrome.storage.sync.get("syndicationFeeds", ({syndicationFeeds})=>{if (!Array.isArray(syndicationFeeds)) chrome.storage.sync.set({syndicationFeeds: []});});
-	chrome.storage.sync.get("syndicationRefreshTime", ({syndicationRefreshTime})=>{
-		if (typeof syndicationRefreshTime !== "number") chrome.storage.sync.set({syndicationRefreshTime: 20}, ()=>syncRefreshAlarm()); // syncRefreshAlarm must be run after syndicationRefreshTime is created
+	chrome.storage.sync.get(["syndicationFeeds", "syndicationRefreshTime", "syndicationLastViewed", "syndicationDateFormat"], keys=>{
+		if (!Array.isArray(keys.syndicationFeeds)) chrome.storage.sync.set({syndicationFeeds: []});
+		if (typeof keys.syndicationRefreshTime !== "number") chrome.storage.sync.set({syndicationRefreshTime: 20}, ()=>syncRefreshAlarm()); // syncRefreshAlarm must be run after syndicationRefreshTime is created
 		else syncRefreshAlarm(); // suncRefreshAlarm must be run whether or not syndicationRefreshTime was initialized here
+		if (typeof keys.syndicationLastViewed !== "number") chrome.storage.sync.set({syndicationLastViewed: Date.now()});
+		if (typeof keys.syndicationDateFormat !== "object") chrome.storage.sync.set({syndicationDateFormat: {year: "numeric", month: "short", day: "numeric"}});
 	});
-	chrome.storage.sync.get("syndicationLastViewed", ({syndicationLastViewed})=>{if (typeof syndicationLastViewed !== "number") chrome.storage.sync.set({syndicationLastViewed: Date.now()});});
 });
 
 chrome.runtime.onStartup.addListener(function() {
@@ -159,7 +162,7 @@ chrome.runtime.onMessage.addListener(function(messageObject, sender, respond) { 
 		syncRefreshAlarm(); // if the "message" key's value is "syncRefreshAlarm", run the syncRefreshAlarm function
 		break;
 	case "getFeedContents": // if the "message" key's value is "getFeedContents",
-		chrome.storage.sync.get(["syndicationFeeds", "syndicationLastViewed"], ({syndicationFeeds, syndicationLastViewed})=>{allFeedContents(syndicationFeeds).then(value=>respond({response: value, lastViewed: syndicationLastViewed}))}); // gets syndicationFeeds from storage and use it to respond with the contents of the feeds
+		chrome.storage.sync.get(["syndicationFeeds", "syndicationLastViewed", "syndicationDateFormat"], keys=>{allFeedContents(keys.syndicationFeeds).then(value=>respond({response: value, lastViewed: keys.syndicationLastViewed, dateFormat: keys.syndicationDateFormat}))}); // gets syndicationFeeds from storage and use it to respond with the contents of the feeds
 		return true; // must return true to be asynchronous
 	}
 });

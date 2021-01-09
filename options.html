@@ -3,10 +3,60 @@
 	<head>
 	</head>
 	<body>
-		<label>Check feeds for updates every <input type="number" id="syndicationRefreshTime" min="1" max="1440"> minutes</label>
-		<button id="save" type="button">Save</button>
-		<label>Debug: Set last viewed date to <input id="lastViewed"></label>
-		<div id="feeds"></div>
+		<h2>General settings</h2>
+		<ul>
+			<li><h3>Update frequency</h3><label>Check feeds for updates every <input type="number" id="syndicationRefreshTime" min="1" max="1440"> minutes</label></li>
+			<li><h3>Date and time format</h3><ul>
+				<li><label>Year <select id="yearformat">
+					<option value="numeric">Numeric</option>
+					<option value="2-digit">2-digit</option>
+					<option value="hidden" selected>Do not display</option>
+				</select></label></li>
+				<li><label>Month <select id="monthformat">
+					<option value="numeric">Numeric</option>
+					<option value="2-digit">2-digit</option>
+					<option value="long">Long</option>
+					<option value="short">Short</option>
+					<option value="narrow">Narrow</option>
+					<option value="hidden" selected>Do not display</option>
+				</select></label></li>
+				<li><label>Weekday <select id="weekdayformat">
+					<option value="long">Long</option>
+					<option value="short">Short</option>
+					<option value="narrow">Narrow</option>
+					<option value="hidden" selected>Do not display</option>
+				</select></label></li>
+				<li><label>Day <select id="dayformat">
+					<option value="numeric">Numeric</option>
+					<option value="2-digit">2-digit</option>
+					<option value="hidden" selected>Do not display</option>
+				</select></label></li>
+				<li><label>Time format <select id="hour12format">
+					<option value="true">12-hour</option>
+					<option value="" selected>24-hour</option>
+				</select></label></li>
+				<li><label>Hour <select id="hourformat">
+					<option value="numeric">Numeric</option>
+					<option value="2-digit">2-digit</option>
+					<option value="hidden" selected>Do not display</option>
+				</select></label></li>
+				<li><label>Minute <select id="minuteformat">
+					<option value="numeric">Numeric</option>
+					<option value="2-digit">2-digit</option>
+					<option value="hidden" selected>Do not display</option>
+				</select></label></li>
+				<li><label>Second <select id="secondformat">
+					<option value="numeric">Numeric</option>
+					<option value="2-digit">2-digit</option>
+					<option value="hidden" selected>Do not display</option>
+				</select></label></li>
+			</ul>
+			<p>Preview: <span id="dateFormatPreview"></span></p>
+			</li>
+			<li><label>Debug: Set last viewed date to <input id="lastViewed"></label></li>
+		</ul>
+		<h2>Feed settings</h2>
+		<ul id="feeds"></ul>
 		<script src="options.js"></script>
 	</body>
 </html>
