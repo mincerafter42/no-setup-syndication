@@ -7,11 +7,29 @@ add error checking
 make visually appealing
 */
 
-function syncRefreshAlarm() {
+function syncRefreshAlarm(now) {
 	// creates the syndicationRefresh alarm if it doesn't already exist
 	// makes the syndicationRefresh alarm fire with the period defined by the synced syndicationRefreshTime setting
-	chrome.storage.sync.get("syndicationRefreshTime", ({syndicationRefreshTime}) => {chrome.alarms.create("syndicationRefresh", {periodInMinutes: syndicationRefreshTime})});
+	chrome.storage.sync.get("syndicationRefreshTime", ({syndicationRefreshTime}) => {
+		let alarmSettings = {periodInMinutes: syndicationRefreshTime}
+		if (now) alarmSettings.when = Date.now();
+		chrome.alarms.create("syndicationRefresh", alarmSettings);
+	});
 }
+
+chrome.alarms.onAlarm.addListener(alarm=>{
+	if ("syndicationRefresh"===alarm.name) chrome.storage.sync.get(["syndicationFeeds", "syndicationLastViewed"], ({syndicationFeeds, syndicationLastViewed})=>{allFeedContents(syndicationFeeds).then(response=>{
+		// the syndicationRefresh alarm just went off so we get the feed contents and last viewed date
+		let combinedItems=[];
+		for (let feed=0;feed<response.length;feed++) { // iterate through every feed in responses
+			if ("fulfilled"===response[feed].status) combinedItems.push(...response[feed].value.item); // push feed's items onto combinedItems
+		}
+		let newPosts = combinedItems.filter(item=>item.pubDate>syndicationLastViewed); // newPosts is set to only the posts that are newer than last view date
+		if (newPosts.length>0&&newPosts.length<1e4) chrome.browserAction.setBadgeText({text: String(newPosts.length)}); // if number of posts is over 0 and fits on badge, put it on badge
+		else if (newPosts.length>=1e4) chrome.browserAction.setBadgeText({text: "9999"}); // if it's too long to fit on badge just set badge to 9999
+		else chrome.browserAction.setBadgeText({text: ""}); // if there are no posts make badge empty
+	})});
+});
 
 function allFeedContents(syndicationFeeds) {
 	/*
@@ -132,7 +150,7 @@ chrome.runtime.onInstalled.addListener(function() { //function that runs when ex
 });
 
 chrome.runtime.onStartup.addListener(function() {
-	syncRefreshAlarm(); //run this on every startup since alarms aren't persistent
+	syncRefreshAlarm(true); //run this on every startup since alarms aren't persistent
 });
 
 chrome.runtime.onMessage.addListener(function(messageObject, sender, respond) { //message function for a message received from elsewhere in the extension

@@ -1,11 +1,14 @@
 // when initialized,
 // set the syndicationRefreshTime input to the value of syndicationRefreshTime in storage
 chrome.storage.sync.get("syndicationRefreshTime", ({syndicationRefreshTime}) => {document.getElementById("syndicationRefreshTime").value=syndicationRefreshTime});
-// add an event listener to the save button
-document.getElementById("save").addEventListener("click", function() {
-	// when the save button is clicked,
+document.getElementById("syndicationRefreshTime").addEventListener("change", function() {
+	// when the refresh time input is changed,
 	// set synchronizationRefreshTime to user-inputted value then send a message to update the period of the syndicationRefresh alarm
 	chrome.storage.sync.set({syndicationRefreshTime: Number(document.getElementById("syndicationRefreshTime").value)}, ()=>{chrome.runtime.sendMessage({message:"syncRefreshAlarm"})});
+});
+// debug: when lastViewed is updated set it to the last viewed date
+document.getElementById("lastViewed").addEventListener("change", function() {
+	chrome.storage.sync.set({syndicationLastViewed: Date.parse(document.getElementById("lastViewed").value)});
 });
 
 /* here we need to get the feeds and show options.  */
@@ -21,8 +24,8 @@ chrome.runtime.sendMessage({message:"getFeedContents"}, {}, ({response})=>{ // m
 			feedTitle.textContent = response[feed].value.title; // the feed loaded, set the h2's text to feed's title
 			feedDescription.innerHTML = response[feed].value.description; // and description's innerHTML
 		}
-		feedSettings.appendChild(feedTitle); // append title to div
-		feedSettings.appendChild(feedDescription); // append description to div
+		feedSettings.appendChild(feedTitle);
+		feedSettings.appendChild(feedDescription);
 		let removeButton = document.createElement("button"); // make the Remove button
 		removeButton.textContent = "Remove"; // set the button's text to "Remove"
 		removeButton.addEventListener("click", function() { // when it's clicked
@@ -32,7 +35,7 @@ chrome.runtime.sendMessage({message:"getFeedContents"}, {}, ({response})=>{ // m
 			});
 			document.getElementById("feeds").removeChild(feedSettings); // and also remove the div from the list of feeds
 		});
-		feedSettings.appendChild(removeButton); // add button to div
+		feedSettings.appendChild(removeButton);
 		document.getElementById("feeds").appendChild(feedSettings); // add div to list of feeds
 	}
 });
