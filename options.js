@@ -21,6 +21,13 @@ chrome.storage.sync.get(["syndicationRefreshTime", "syndicationDateFormat"], key
 	displayDate();
 });
 
+const downloadSetting = document.getElementById("downloadsAllowed");
+chrome.permissions.contains({permissions: ["downloads"]}, downloadsAllowed=>downloadSetting.checked = downloadsAllowed) // set the downloadsAllowed checkbox to whether downloads are allowed
+downloadSetting.addEventListener("change", function() {
+	if (downloadSetting.checked) chrome.permissions.request({permissions: ["downloads"]}, granted=>downloadSetting.checked = granted); // if downloadSetting gets checked, request permission to enable downloads
+	else chrome.permissions.remove({permissions: ["downloads"]}); // if it gets unchecked, remove the permission
+});
+
 document.getElementById("syndicationRefreshTime").addEventListener("change", function() {
 	// when the refresh time input is changed,
 	// set synchronizationRefreshTime to user-inputted value then send a message to update the period of the syndicationRefresh alarm
@@ -33,10 +40,12 @@ document.getElementById("lastViewed").addEventListener("change", function() {
 });
 
 /* here we need to get the feeds and show options.  */
-chrome.runtime.sendMessage({message:"getFeedContents"}, {}, ({response})=>{ // make the background script get feed contents, then
+chrome.runtime.sendMessage({message:"getFeedContents"}, {}, ({response, originalFeeds})=>{ // make the background script get feed contents, then
 	for (let feed=0;feed<response.length;feed++) { // iterate through every feed
 		let feedSettings = document.createElement("li"); // make a list item. It will contain the feed name, description, and the Remove button.
 		let feedTitle = document.createElement("h3"); // this h3 element will contain the title (unless feed failed to load)
+		let feedURL = document.createElement("p");
+		feedURL.textContent = "URL: "+originalFeeds[feed].url;
 		let feedDescription = document.createElement("p"); // this p element will contain the description (unless feed failed to load)
 		if (response[feed].status === "rejected") { // but if the feed failed to load,
 			feedTitle.textContent = "Error getting feed"; // the title is set to a static error message
@@ -46,6 +55,7 @@ chrome.runtime.sendMessage({message:"getFeedContents"}, {}, ({response})=>{ // m
 			feedDescription.textContent = response[feed].value.description; // and description's innerHTML
 		}
 		feedSettings.appendChild(feedTitle);
+		feedSettings.appendChild(feedURL);
 		feedSettings.appendChild(feedDescription);
 		let removeButton = document.createElement("button"); // make the Remove button
 		removeButton.textContent = "Remove"; // set the button's text to "Remove"

@@ -9,6 +9,8 @@ function makeGhostButton(icon, alt, classes) { // function to make a button cons
 }
 
 function parseFeedNow() {
+document.getElementById("feed").innerHTML = "";
+document.getElementById("statusbar").textContent = "Loading feeds";
 chrome.runtime.sendMessage({message: "getFeedContents"}, {}, ({response, lastViewed, dateFormat})=>{ // send the message {message: "getFeedContents"}
 	/* function parsing {response} to that message, should be the result of a Promise.allSettled()
 	need to read feeds from promises, put items in chronological order, and display items */
@@ -24,7 +26,7 @@ chrome.runtime.sendMessage({message: "getFeedContents"}, {}, ({response, lastVie
 	// now we just need to display the items in combinedItems
 	const dateFormatter = new Intl.DateTimeFormat([], dateFormat);
 	for (let item=0;item<combinedItems.length;item++) { // iterate through every item in combinedItems
-		let itemDisplay = document.createElement("div"); // make a div
+		let itemDisplay = document.createElement("div");
 		if (combinedItems[item].pubDate>lastViewed) itemDisplay.className = "item unread"; // if this item is more recent than last read, give it the unread class
 		else itemDisplay.className = "item read"; // if it's less recent than last read give it the read class
 		
@@ -65,8 +67,23 @@ chrome.runtime.sendMessage({message: "getFeedContents"}, {}, ({response, lastVie
 		itemTime.className = "time";
 		itemTime.appendChild(document.createTextNode(dateFormatter.format(new Date(combinedItems[item].pubDate))));
 		itemTime.appendChild(document.createElement("br"));
-		itemTime.appendChild(document.createTextNode(combinedItems[item].source));
+		itemTime.appendChild(document.createTextNode(combinedItems[item].source)); // also put name of feed item is from here
 		itemMeta.appendChild(itemTime);
+		
+		if (combinedItems[item].enclosure) { // if this item has an enclosure (enclosed file)
+			let enclosureURL = combinedItems[item].enclosure.url;
+			let itemEnclosure = makeGhostButton("play", "Open enclosed file", "float-right"); // make a button for opening the enclosed file
+			chrome.permissions.contains({permissions: ["downloads"]}, downloadsAllowed=>{ // check if the downloads permission is enabled
+				if (downloadsAllowed) {
+					chrome.downloads.search({exists: true, url: combinedItems[item].enclosure.url, state: "complete"}, downloads=>{ // if downloads are allowed, check if there was a successful download of this enclosure
+						if (downloads.length===0) itemEnclosure.addEventListener("click", ()=>window.open(enclosureURL)); // if there are no downloads, make clicking the button open the enclosure in a window
+						else {let downloadID = downloads[0].id; itemEnclosure.addEventListener("click", ()=>chrome.downloads.open(downloadID))} // if there is a download, make clicking the button open the download
+					});
+				}
+				else itemEnclosure.addEventListener("click", ()=>window.open(enclosureURL)); // if downloads are not enabled, make clicking the button open the enclosure in a window
+			});
+			itemMeta.appendChild(itemEnclosure);
+		}
 		
 		// make a div with the item's description and put it in the div
 		itemDescription.className = "description"
@@ -98,7 +115,7 @@ document.getElementById("add").addEventListener("click", function() {
 
 // makes the Cancel button in feedAdder hide feedAdder and do nothing else
 document.getElementById("feedAddCancel").addEventListener("click", ()=>document.getElementById("feedAdder").style.display="none");
-// makes the Add Feed button in feedAdder add the URL to the array of feeds with permission to access feed URL
+// makes the Add Feed button in feedAdder add the URL to the array of feeds
 document.getElementById("feedAddConfirm").addEventListener("click", function() {
 	let feedURL;
 	const feedURLText = document.getElementById("feedAddURL").value;
@@ -107,8 +124,7 @@ document.getElementById("feedAddConfirm").addEventListener("click", function() {
 		catch(e) {feedURL = new URL("https://"+feedURLText)} // if not, prefix it with https:// (seems to work when anything follows the https://)
 		chrome.storage.sync.get("syndicationFeeds", ({syndicationFeeds})=>{ // get the current list of feeds then
 			syndicationFeeds.push({url: feedURL.href}); // pushes this feed onto it then
-			chrome.storage.sync.set({syndicationFeeds: syndicationFeeds}); // syncs it with the storage
-			parseFeedNow(); // then update the feeds seen here in popup
+			chrome.storage.sync.set({syndicationFeeds: syndicationFeeds}, ()=>parseFeedNow()); // syncs it with the storage, then update the feeds seen here in popup
 		});
 	}
 	document.getElementById("feedAdder").style.display="none"; // hide feedAdder
