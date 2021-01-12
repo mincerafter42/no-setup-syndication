@@ -4,7 +4,7 @@ body {
 	font-family: sans-serif;
 	font-size: 15px;
 	background-color: #ededed;
-	min-width: 750px;
+	min-width: 785px;
 	min-height: 600px;
 }
 h2 {
@@ -22,7 +22,7 @@ a:hover, a:focus, a:active {
 	position: sticky;
 	top: 0;
 	background-color: #f9f9f9;
-	padding: 8px;
+	padding: 8px 7px;
 	overflow: hidden;
 	color: #0c0c0c;
 }
@@ -32,6 +32,7 @@ a:hover, a:focus, a:active {
 	padding: 8px;
 	background-color: transparent;
 	border: 0;
+	margin: 0 1px;
 }
 .ghost:hover {
 	background-color: rgba(12, 12, 12, 0.1);
@@ -57,16 +58,6 @@ a:hover, a:focus, a:active {
 	line-height: 32px;
 	text-align: center;
 }
-#feedAdder {
-	clear: both;
-	text-align: center;
-}
-#feedAddURL {
-	border-radius: 2px;
-	padding: 6px;
-	border: 2px solid rgba(12, 12, 12, 0.2);
-	color: #0c0c0c;
-}
 #feed {
 	padding: 0 12px;
 }
@@ -76,7 +67,7 @@ a:hover, a:focus, a:active {
 	background-color: #d7d7d7;
 }
 .meta {
-	padding: 4px;
+	padding: 4px 3px;
 	border-radius: 8px 8px 0 0;
 	overflow: hidden;
 }
@@ -89,6 +80,8 @@ a:hover, a:focus, a:active {
 .meta h2 {
 	font-size: 22px;
 	line-height: 32px;
+	margin: 0 1px;
+	float: left;
 }
 .read a {
 	color: #0060dfaa;
@@ -98,6 +91,7 @@ a:hover, a:focus, a:active {
 	text-align: right;
 	font-size: 13px;
 	line-height: 16px;
+	margin: 0 1px;
 }
 .description {
 	padding: 12px;

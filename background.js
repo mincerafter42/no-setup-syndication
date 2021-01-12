@@ -18,17 +18,15 @@ chrome.alarms.onAlarm.addListener(alarm=>{
 			if ("fulfilled"===response[feed].status) combinedItems.push(...response[feed].value.item); // push feed's items onto combinedItems
 		}
 		let newPosts = combinedItems.filter(item=>item.pubDate>syndicationLastViewed); // newPosts is set to only the posts that are newer than last view date
-		if (newPosts.length>0&&newPosts.length<1e4) chrome.browserAction.setBadgeText({text: String(newPosts.length)}); // if number of posts is over 0 and fits on badge, put it on badge
-		else if (newPosts.length>=1e4) chrome.browserAction.setBadgeText({text: "9999"}); // if it's too long to fit on badge just set badge to 9999
+		if (newPosts.length>0&&newPosts.length<1e3) chrome.browserAction.setBadgeText({text: String(newPosts.length)}); // if number of posts is over 0 and under 1000, put it on badge
+		else if (newPosts.length>999) chrome.browserAction.setBadgeText({text: "999+"}); // if it's 4 or more digits set badge to 999+
 		else chrome.browserAction.setBadgeText({text: ""}); // if there are no posts make badge empty
 		chrome.permissions.contains({permissions: ["downloads"]}, downloadsAllowed=>{if (downloadsAllowed) { // check if the downloads permission is allowed. If it is, download enclosures
 			let enclosures = combinedItems.filter(item=>item.enclosure).map(item=>item.enclosure); // set enclosures to list of enclosures
 			for (enclosure of enclosures) { // iterate through enclosures (any order)
-				console.log(enclosure.url + " is an enclosure URL");
 				chrome.downloads.search({url: enclosure.url}, (downloads)=>{ // check for existing downloads with the same URL
-					if (downloads.length===0) chrome.downloads.download({saveAs: false, url: enclosure.url, conflictAction: "uniquify"}); // if none exist, download file
+					if (downloads.length===0) chrome.downloads.download({url: enclosure.url, conflictAction: "uniquify", saveAs: false}); // if none exist, download file
 					else if (downloads[0].state !== "complete" && downloads[0].canResume) chrome.downloads.resume(downloads[0].id) // if download is incomplete and resumable, resume it
-					else if (downloads[0].state === "interrupted") {chrome.downloads.erase({id: downloads[0].id});chrome.downloads.download({saveAs: false, url: enclosure.url, conflictAction: "uniquify"});} // if download failed (and can't be resumed), erase that download and start a new one
 				});
 			}
 		}});
@@ -78,7 +76,10 @@ function parseFeed(feedXML) {
 		case "rss": // it's "rss", meaning now we know this is an RSS feed
 			const childrenToFind = {title:0, description:0, link:0, // these are the children we're looking for (in <channel>)
 			image: {url:0, title:0, link:0, description:0}, 
-			item: matching=>matching.map(item=>matchingChildren(item,{title:0,link:0,description:0,pubDate:([matching])=>rfc822Date(matching.textContent),enclosure:([matching])=>{return {url: matching.attributes.getNamedItem("url").value}}}))
+			item: matching=>matching.map(item=>matchingChildren(item,{title:0,link:0,description:0,pubDate:([matching])=>rfc822Date(matching.textContent),enclosure:([matching])=>{return {url: matching.attributes.getNamedItem("url").value}},guid:([matching])=>{
+				let isPermaLink = matching.attributes.getNamedItem("isPermaLink")
+				return {id: matching.textContent, isPermaLink: isPermaLink?isPermaLink.value:"true"}} // in the guid element, need to check if the isPermaLink attribute exists because otherwise there'll be an error with null.value
+			}))
 			}
 			return matchingChildren(feedXML.documentElement, {channel: childrenToFind}).channel; // <channel> exists but we can just return its contents
 		default: // tag name is not "rss", throw error

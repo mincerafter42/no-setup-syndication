@@ -22,7 +22,7 @@ chrome.runtime.sendMessage({message: "getFeedContents"}, {}, ({response, lastVie
 			combinedItems.push(...sourceAdded); // push items from this feed into combinedItems
 		}
 	}
-	combinedItems.sort((item1, item2)=>item2.pubDate-item1.pubDate); // sort items by pubDate, more recent items first
+	combinedItems.sort((item1, item2)=>(item2.pubDate||lastViewed)-(item1.pubDate||lastViewed)); // sort items by pubDate, more recent items first. no pubDate = default to last viewed time
 	// now we just need to display the items in combinedItems
 	const dateFormatter = new Intl.DateTimeFormat([], dateFormat);
 	for (let item=0;item<combinedItems.length;item++) { // iterate through every item in combinedItems
@@ -109,17 +109,8 @@ document.getElementById("options").addEventListener("click", ()=>chrome.runtime.
 
 // makes the Add Feed button show the feedAdder element (UI to add a feed) with an empty input when clicked
 document.getElementById("add").addEventListener("click", function() {
-	document.getElementById("feedAddURL").value="";
-	document.getElementById("feedAdder").style.display="block";
-});
-
-// makes the Cancel button in feedAdder hide feedAdder and do nothing else
-document.getElementById("feedAddCancel").addEventListener("click", ()=>document.getElementById("feedAdder").style.display="none");
-// makes the Add Feed button in feedAdder add the URL to the array of feeds
-document.getElementById("feedAddConfirm").addEventListener("click", function() {
-	let feedURL;
-	const feedURLText = document.getElementById("feedAddURL").value;
-	if (feedURLText.length>0) { // makes sure input is at least 1 character long
+	let feedURLText = prompt("Feed URL"), feedURL;
+	if (feedURLText !== null && feedURLText !== "") {
 		try {feedURL = new URL(feedURLText)} // checks if input is by itself a valid URL
 		catch(e) {feedURL = new URL("https://"+feedURLText)} // if not, prefix it with https:// (seems to work when anything follows the https://)
 		chrome.storage.sync.get("syndicationFeeds", ({syndicationFeeds})=>{ // get the current list of feeds then
@@ -127,7 +118,6 @@ document.getElementById("feedAddConfirm").addEventListener("click", function() {
 			chrome.storage.sync.set({syndicationFeeds: syndicationFeeds}, ()=>parseFeedNow()); // syncs it with the storage, then update the feeds seen here in popup
 		});
 	}
-	document.getElementById("feedAdder").style.display="none"; // hide feedAdder
 });
 
 parseFeedNow(); // show feed items when popup opened
