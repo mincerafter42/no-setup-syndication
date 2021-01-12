@@ -7,9 +7,10 @@ body {
 	min-width: 785px;
 	min-height: 600px;
 }
-h2 {
-	float: left;
-	margin: 0;
+header {
+	position: absolute;
+	left: -999px;
+	font-size: 1px;
 }
 a {
 	color: #0060df;
@@ -27,7 +28,7 @@ a:hover, a:focus, a:active {
 	color: #0c0c0c;
 }
 .ghost {
-	color: rgba(12, 12, 12, 0.8);
+	color: #0c0c0ccc;
 	border-radius: 2px;
 	padding: 8px;
 	background-color: transparent;
@@ -35,13 +36,13 @@ a:hover, a:focus, a:active {
 	margin: 0 1px;
 }
 .ghost:hover {
-	background-color: rgba(12, 12, 12, 0.1);
+	background-color: #0c0c0c19;
 }
 .ghost:active {
-	background-color: rgba(12, 12, 12, 0.2);
+	background-color: #0c0c0c33;
 }
 .ghost:focus {
-	box-shadow: 0 0 0 1px #0a84ff inset, 0 0 0 1px #0a84ff, 0 0 0 4px rgba(10, 132, 255, 0.3);
+	box-shadow: 0 0 0 1px #0a84ff inset, 0 0 0 1px #0a84ff, 0 0 0 4px #0a84ff4c;
 }
 .ghost img {
 	vertical-align: bottom;

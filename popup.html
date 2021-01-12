@@ -4,12 +4,13 @@
 		<link rel="stylesheet" href="popup.css">
 	</head>
 	<body>
-		<div id="controls">
+		<nav id="controls">
 			<button id="options" class="ghost float-left" type="button"><img src="/icons/options.svg" alt="Options" /></button>
 			<button id="add" class="ghost float-right" type="button"><img src="/icons/new.svg" alt="Add Feed" /></button>
 			<div id="statusbar"></div>
-		</div>
-		<div id="feed"></div>
+		</nav>
+		<header><h1>Syndication feeds</h1></header>
+		<main id="feed" aria-live="polite"></main>
 		<script src="popup.js"></script>
 	</body>
 </html>

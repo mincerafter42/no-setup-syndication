@@ -18,7 +18,7 @@ chrome.runtime.sendMessage({message: "getFeedContents"}, {}, ({response, lastVie
 	let combinedItems=[]; // combinedItems will fill with items from all feeds
 	for (let feed=0;feed<response.length;feed++) { // iterate through every Promise in the array
 		if (response[feed].status === "fulfilled") { // only need to pay attention if the promise is fulfilled
-			let sourceAdded = response[feed].value.item.map(item=>{item.source = response[feed].value.title; return item}); // makes each item include a "source" attribute giving the feed it's from
+			let sourceAdded = response[feed].value.item.map(item=>{item.source = response[feed].value.title; item.sourceURL = response[feed].value.link; return item}); // makes each item include a "source" attribute giving the feed it's from
 			combinedItems.push(...sourceAdded); // push items from this feed into combinedItems
 		}
 	}
@@ -52,12 +52,15 @@ chrome.runtime.sendMessage({message: "getFeedContents"}, {}, ({response, lastVie
 		if (combinedItems[item].pubDate>lastViewed) itemMaximize.style.display = "none"; // if this is a new item hide maximize button initially
 		else {itemMinimize.style.display = "none"; itemDescription.style.display = "none";} //if this item was already viewed initialize to minimized
 		
+		// set item's URL by using it's <link>. If that does not exist, use it's <guid> if it's a link, and if neither use the feed's URL
+		const itemURL = combinedItems[item].link || (combinedItems[item].guid.isPermaLink === "true" ? combinedItems[item].guid.id : combinedItems[item].sourceURL);
+		
 		let itemTitle = document.createElement("h2"); // make an h2 with the item's title and link and put it in the meta
 		if (combinedItems[item].link) {
 			let itemLink = document.createElement("a");
 			itemLink.target = "_blank";
-			itemLink.href = combinedItems[item].link;
-			itemLink.textContent = combinedItems[item].title;
+			itemLink.href = itemURL;
+			itemLink.textContent = combinedItems[item].title || "Post"; // <title> is an optional element, use "Post" as the title if it doesn't exist
 			itemTitle.appendChild(itemLink);
 		}
 		else itemTitle.textContent = combinedItems[item].title;
@@ -65,7 +68,8 @@ chrome.runtime.sendMessage({message: "getFeedContents"}, {}, ({response, lastVie
 		
 		let itemTime = document.createElement("span"); // make an element with the publish date and put it in the meta
 		itemTime.className = "time";
-		itemTime.appendChild(document.createTextNode(dateFormatter.format(new Date(combinedItems[item].pubDate))));
+		if (combinedItems[item].pubDate) itemTime.appendChild(document.createTextNode(dateFormatter.format(new Date(combinedItems[item].pubDate))));
+		else itemTime.appendChild(document.createTextNode("No publish date"));
 		itemTime.appendChild(document.createElement("br"));
 		itemTime.appendChild(document.createTextNode(combinedItems[item].source)); // also put name of feed item is from here
 		itemMeta.appendChild(itemTime);
@@ -73,7 +77,7 @@ chrome.runtime.sendMessage({message: "getFeedContents"}, {}, ({response, lastVie
 		if (combinedItems[item].enclosure) { // if this item has an enclosure (enclosed file)
 			let enclosureURL = combinedItems[item].enclosure.url;
 			let itemEnclosure = makeGhostButton("play", "Open enclosed file", "float-right"); // make a button for opening the enclosed file
-			chrome.permissions.contains({permissions: ["downloads"]}, downloadsAllowed=>{ // check if the downloads permission is enabled
+			chrome.permissions.contains({permissions: ["downloads", "downloads.open"]}, downloadsAllowed=>{ // check if the downloads permission is enabled
 				if (downloadsAllowed) {
 					chrome.downloads.search({exists: true, url: combinedItems[item].enclosure.url, state: "complete"}, downloads=>{ // if downloads are allowed, check if there was a successful download of this enclosure
 						if (downloads.length===0) itemEnclosure.addEventListener("click", ()=>window.open(enclosureURL)); // if there are no downloads, make clicking the button open the enclosure in a window
@@ -91,7 +95,7 @@ chrome.runtime.sendMessage({message: "getFeedContents"}, {}, ({response, lastVie
 		let itemDescriptionLinks = itemDescription.getElementsByTagName("a"); // getting all the links in the description to make sure they open in new tabs and are absolute URLs
 		for (const link of itemDescriptionLinks) { // iterate through links (any order)
 			link.target = "_blank"; // link will open in new tab
-			if (link.origin === window.origin) link.href = new URL(link.pathname+link.search+link.hash, combinedItems[item].link); // if the origin is the same as the extension window, assume link is relative and fix
+			if (link.origin === window.origin) link.href = new URL(link.pathname+link.search+link.hash, itemURL); // if the origin is the same as the extension window, assume link is relative and fix
 		}
 		itemDisplay.appendChild(itemDescription);
 		document.getElementById("feed").appendChild(itemDisplay); // add the div to the "feed" element
@@ -107,7 +111,7 @@ chrome.runtime.sendMessage({message: "getFeedContents"}, {}, ({response, lastVie
 // makes the Options button open the options page
 document.getElementById("options").addEventListener("click", ()=>chrome.runtime.openOptionsPage());
 
-// makes the Add Feed button show the feedAdder element (UI to add a feed) with an empty input when clicked
+// makes the Add Feed button prompt the user for the URL when clicked, and add feed if user gives a URL
 document.getElementById("add").addEventListener("click", function() {
 	let feedURLText = prompt("Feed URL"), feedURL;
 	if (feedURLText !== null && feedURLText !== "") {

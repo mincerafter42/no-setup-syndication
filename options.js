@@ -35,14 +35,14 @@ chrome.storage.sync.get(["syndicationRefreshTime", "syndicationDateFormat"], key
 	const dateFormatKeys = ["year", "month", "weekday", "day", "hour12", "hour", "minute", "second"];
 	function displayDate(sync) {
 		let dateFormat = {}
-		for (key of dateFormatKeys) {
+		for (const key of dateFormatKeys) {
 			const value = document.getElementById(key+"format").value;
 			if ("hidden" !== value) dateFormat[key] = value;
 		}
 		if (sync) chrome.storage.sync.set({syndicationDateFormat: dateFormat});
 		document.getElementById("dateFormatPreview").textContent = new Intl.DateTimeFormat([], dateFormat).format(new Date());
 	}
-	for (key of dateFormatKeys) {
+	for (const key of dateFormatKeys) {
 		const menu = document.getElementById(key+"format");
 		if (keys.syndicationDateFormat[key] !== undefined) menu.value = keys.syndicationDateFormat[key];
 		menu.addEventListener("change", ()=>displayDate(true));
@@ -51,10 +51,10 @@ chrome.storage.sync.get(["syndicationRefreshTime", "syndicationDateFormat"], key
 });
 
 const downloadSetting = document.getElementById("downloadsAllowed");
-chrome.permissions.contains({permissions: ["downloads"]}, downloadsAllowed=>downloadSetting.checked = downloadsAllowed) // set the downloadsAllowed checkbox to whether downloads are allowed
+chrome.permissions.contains({permissions: ["downloads", "downloads.open"]}, downloadsAllowed=>downloadSetting.checked = downloadsAllowed) // set the downloadsAllowed checkbox to whether downloads are allowed
 downloadSetting.addEventListener("change", function() {
-	if (downloadSetting.checked) chrome.permissions.request({permissions: ["downloads"]}, granted=>downloadSetting.checked = granted); // if downloadSetting gets checked, request permission to enable downloads
-	else chrome.permissions.remove({permissions: ["downloads"]}); // if it gets unchecked, remove the permission
+	if (downloadSetting.checked) chrome.permissions.request({permissions: ["downloads", "downloads.open"]}, granted=>downloadSetting.checked = granted); // if downloadSetting gets checked, request permission to enable downloads
+	else chrome.permissions.remove({permissions: ["downloads", "downloads.open"]}); // if it gets unchecked, remove the permission
 });
 
 document.getElementById("syndicationRefreshTime").addEventListener("change", function() {

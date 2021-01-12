@@ -11,7 +11,8 @@
 		"http://*/"
 	],
 	"optional_permissions": [
-		"downloads"
+		"downloads",
+		"downloads.open"
 	],
 	"browser_action": {
 		"default_popup": "popup.html",

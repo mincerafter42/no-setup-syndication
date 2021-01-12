@@ -23,8 +23,10 @@ chrome.alarms.onAlarm.addListener(alarm=>{
 		else chrome.browserAction.setBadgeText({text: ""}); // if there are no posts make badge empty
 		chrome.permissions.contains({permissions: ["downloads"]}, downloadsAllowed=>{if (downloadsAllowed) { // check if the downloads permission is allowed. If it is, download enclosures
 			let enclosures = combinedItems.filter(item=>item.enclosure).map(item=>item.enclosure); // set enclosures to list of enclosures
-			for (enclosure of enclosures) { // iterate through enclosures (any order)
+			for (const enclosure of enclosures) { // iterate through enclosures (any order)
+			console.log(enclosure)
 				chrome.downloads.search({url: enclosure.url}, (downloads)=>{ // check for existing downloads with the same URL
+					console.log(enclosure);
 					if (downloads.length===0) chrome.downloads.download({url: enclosure.url, conflictAction: "uniquify", saveAs: false}); // if none exist, download file
 					else if (downloads[0].state !== "complete" && downloads[0].canResume) chrome.downloads.resume(downloads[0].id) // if download is incomplete and resumable, resume it
 				});
