@@ -16,7 +16,8 @@ Contents of the /icons folder are used under the Mozilla Public License.
 
 ## Installation instructions
 ### Installation instructions for Chromium
-Go to <chrome://extensions>. Enable **Developer Mode**. Click **Load Unpacked** and select an uncompressed folder containing these files.
+Go to <chrome://extensions>. Enable **Developer Mode**. Click **Load Unpacked** and select an uncompressed folder containing these files. You can disable **Developer Mode** now if you want.
+
 Known issue: If Chromium's setting "Ask where to save each file before downloading" is enabled, and this extension's setting "Download enclosed media" is enabled, save prompts will show for the enclosed media. This is [a known issue with Chromium](https://bugs.chromium.org/p/chromium/issues/detail?id=417112).
-### Temporary installation instructions for Firefox
-Go to <about:debugging#/runtime/this-firefox>. Click **Load temporary add-on** and select the `manifest.json` file.
+### Installation instructions for Firefox
+Go to <about:addons>. Click the **gear** and select **Install add-on from file.** Select a .zip file containing these files.
