@@ -20,4 +20,4 @@ Go to <chrome://extensions>. Enable **Developer Mode**. Click **Load Unpacked** 
 
 Known issue: If Chromium's setting "Ask where to save each file before downloading" is enabled, and this extension's setting "Download enclosed media" is enabled, save prompts will show for the enclosed media. This is [a known issue with Chromium](https://bugs.chromium.org/p/chromium/issues/detail?id=417112).
 ### Installation instructions for Firefox
-Go to <about:addons>. Click the **gear** and select **Install add-on from file.** Select a .zip file containing these files.
+Go to <about:addons>. Click the **gear** and select **Install add-on from file.** Select a .zip file containing these files. Or, instead of a zip file, [the .xpi file I host](https://mincerafter42.github.io/assets/no_setup_syndication.xpi), which is just the .zip file with some Mozilla META-INF files.

@@ -80,7 +80,7 @@ function parseFeed(feedXML) {
 			}))
 			}
 			return matchingChildren(feedXML.documentElement, {channel: childrenToFind}).channel; // <channel> exists but we can just return its contents
-		default: // tag name is not "rss" or "atom", throw error
+		default: // tag name is not "rss", throw error
 			throw "Unknown feed format";
 		}
 	}

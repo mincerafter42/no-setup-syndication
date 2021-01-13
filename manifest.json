@@ -4,7 +4,7 @@
 	"name": "No Setup Syndication",
 	"short_name": "NSS",
 	"author": "mincerafter42",
-	"description": "An RSS feed reader that is ready to use immediately upon installation.\nThis extension requests permisson to access all URLs. It will only use this to get the contents of the feeds you specify.\nSource and license info at https://github.com/mincerafter42/no-setup-syndication",
+	"description": "An RSS feed reader that is ready to use immediately upon installation.\nThis extension requests permisson to access all URLs. It will only use this to get the contents of the feeds you specify.",
 	"permissions": [
 		"storage",
 		"alarms",
