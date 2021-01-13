@@ -14,7 +14,7 @@ document.getElementById("statusbar").textContent = "Loading feeds";
 chrome.runtime.sendMessage({message: "getFeedContents"}, {}, ({response, lastViewed, dateFormat})=>{ // send the message {message: "getFeedContents"}
 	/* function parsing {response} to that message, should be the result of a Promise.allSettled()
 	need to read feeds from promises, put items in chronological order, and display items */
-	if (response.length>1) {
+	if (response.length>0) {
 	let combinedItems=[];
 	for (const feed of response) { // iterate through every Promise in the array
 		if (feed.status === "fulfilled") { // only need to pay attention if the promise is fulfilled
