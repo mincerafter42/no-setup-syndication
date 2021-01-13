@@ -9,7 +9,7 @@ function parseSingleFeed(response, originalFeeds, feed) {
 		feedDescription.textContent = response[feed].reason; // and the description is set to the error given
 	} else {
 		feedTitle.textContent = response[feed].value.title; // the feed loaded, set the h2's text to feed's title
-		feedDescription.textContent = response[feed].value.description; // and description's innerHTML
+		feedDescription.textContent = response[feed].value.description; // and description to description
 	}
 	feedSettings.appendChild(feedTitle);
 	feedSettings.appendChild(feedURL);
@@ -32,22 +32,22 @@ function parseSingleFeed(response, originalFeeds, feed) {
 // set the date format inputs to the values of syndicationDateFormat in storage, and add event listeners so they update syndicationDateFormat
 chrome.storage.sync.get(["syndicationRefreshTime", "syndicationDateFormat"], keys=> {
 	document.getElementById("syndicationRefreshTime").value=keys.syndicationRefreshTime;
-	const dateFormatKeys = ["year", "month", "weekday", "day", "hour12", "hour", "minute", "second"];
-	function displayDate(sync) {
+	const dateFormatKeys = ["year", "month", "weekday", "day", "hour12", "hour", "minute", "second"]; // all the keys in the DateTimeFromat that user can change
+	function displayDate(sync) { // displayDate will gather the user's date settings from options page
 		let dateFormat = {}
 		for (const key of dateFormatKeys) {
-			const value = document.getElementById(key+"format").value;
-			if ("hidden" !== value) dateFormat[key] = value;
+			const value = document.getElementById(key+"format").value; // get value from corresponding <select> element
+			if ("hidden" !== value) dateFormat[key] = value; // value of "hidden" in the menu means the value should be unset
 		}
-		if (sync) chrome.storage.sync.set({syndicationDateFormat: dateFormat});
-		document.getElementById("dateFormatPreview").textContent = new Intl.DateTimeFormat([], dateFormat).format(new Date());
+		if (sync) chrome.storage.sync.set({syndicationDateFormat: dateFormat}); // sync input determines whether to sync date too or just display it
+		document.getElementById("dateFormatPreview").textContent = new Intl.DateTimeFormat([], dateFormat).format(new Date()); // display date in dateFormatPreview
 	}
-	for (const key of dateFormatKeys) {
+	for (const key of dateFormatKeys) { // going to put the date settings in the <select> elements
 		const menu = document.getElementById(key+"format");
-		if (keys.syndicationDateFormat[key] !== undefined) menu.value = keys.syndicationDateFormat[key];
-		menu.addEventListener("change", ()=>displayDate(true));
+		if (keys.syndicationDateFormat[key] !== undefined) menu.value = keys.syndicationDateFormat[key]; // if a key is undefined, keep <select> element on default setting ("hidden")
+		menu.addEventListener("change", ()=>displayDate(true)); // when one of the <select> elements changes, display the date and sync
 	}
-	displayDate();
+	displayDate(); // display date initially, without sync because nothing changed
 });
 
 const downloadSetting = document.getElementById("downloadsAllowed");
@@ -63,10 +63,10 @@ document.getElementById("syndicationRefreshTime").addEventListener("change", fun
 	chrome.storage.sync.set({syndicationRefreshTime: Number(document.getElementById("syndicationRefreshTime").value)}, ()=>{chrome.runtime.sendMessage({message:"syncRefreshAlarm"})});
 });
 
-// debug: when lastViewed is updated set it to the last viewed date
+/*// debug: when lastViewed is updated set it to the last viewed date
 document.getElementById("lastViewed").addEventListener("change", function() {
 	chrome.storage.sync.set({syndicationLastViewed: Date.parse(document.getElementById("lastViewed").value)});
-});
+});*/
 
 /* here we need to get the feeds and show options.  */
 chrome.runtime.sendMessage({message:"getFeedContents"}, {}, ({response, originalFeeds})=>{ // make the background script get feed contents, then

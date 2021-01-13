@@ -1,9 +1,10 @@
 {
 	"manifest_version": 2,
-	"version": "0",
+	"version": "1",
 	"name": "No Setup Syndication",
 	"short_name": "NSS",
-	"description": "Designed with the goal of being a feed reader that works immediately upon installation. This extension needs your permission to access all websites. It will only use this to read the feeds that you specify.",
+	"author": "mincerafter42",
+	"description": "An RSS feed reader that is ready to use immediately upon installation.\nThis extension requests permisson to access all URLs. It will only use this to get the contents of the feeds you specify.\nSource and license info at https://github.com/mincerafter42/no-setup-syndication",
 	"permissions": [
 		"storage",
 		"alarms",

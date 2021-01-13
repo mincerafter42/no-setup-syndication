@@ -12,10 +12,9 @@ function syncRefreshAlarm(now) {
 chrome.alarms.onAlarm.addListener(alarm=>{
 	if ("syndicationRefresh"===alarm.name) chrome.storage.sync.get(["syndicationFeeds", "syndicationLastViewed"], ({syndicationFeeds, syndicationLastViewed})=>{allFeedContents(syndicationFeeds).then(response=>{
 		// the syndicationRefresh alarm just went off so we get the feed contents and last viewed date
-		console.log("syndicationRefresh fired");
 		let combinedItems=[];
-		for (let feed=0;feed<response.length;feed++) { // iterate through every feed in responses
-			if ("fulfilled"===response[feed].status) combinedItems.push(...response[feed].value.item); // push feed's items onto combinedItems
+		for (const feed of response) { // iterate through every feed in responses
+			if ("fulfilled"===feed.status) combinedItems.push(...feed.value.item); // push feed's items onto combinedItems
 		}
 		let newPosts = combinedItems.filter(item=>item.pubDate>syndicationLastViewed); // newPosts is set to only the posts that are newer than last view date
 		if (newPosts.length>0&&newPosts.length<1e3) chrome.browserAction.setBadgeText({text: String(newPosts.length)}); // if number of posts is over 0 and under 1000, put it on badge
@@ -24,15 +23,13 @@ chrome.alarms.onAlarm.addListener(alarm=>{
 		chrome.permissions.contains({permissions: ["downloads"]}, downloadsAllowed=>{if (downloadsAllowed) { // check if the downloads permission is allowed. If it is, download enclosures
 			let enclosures = combinedItems.filter(item=>item.enclosure).map(item=>item.enclosure); // set enclosures to list of enclosures
 			for (const enclosure of enclosures) { // iterate through enclosures (any order)
-			console.log(enclosure)
 				chrome.downloads.search({url: enclosure.url}, (downloads)=>{ // check for existing downloads with the same URL
-					console.log(enclosure);
 					if (downloads.length===0) chrome.downloads.download({url: enclosure.url, conflictAction: "uniquify", saveAs: false}); // if none exist, download file
 					else if (downloads[0].state !== "complete" && downloads[0].canResume) chrome.downloads.resume(downloads[0].id) // if download is incomplete and resumable, resume it
 				});
 			}
 		}});
-	})});
+	})}); // woah check out these clumps of brackets!
 });
 
 function allFeedContents(syndicationFeeds) {
@@ -40,7 +37,7 @@ function allFeedContents(syndicationFeeds) {
 	gets and returns contents of all feeds listed in syndicationFeeds
 	syndicationFeeds is an array of feeds where each feed is formatted as {url: <feed's URL>}
 	*/
-	let feeds = []; // feeds is an empty array that will be filled with Promises for every feed
+	let feeds = [];
 	for (let feed=0;feed<syndicationFeeds.length;feed++) { // iterate through every feed
 		feeds.push(xmlPromise(syndicationFeeds[feed].url).then(parseFeed)); // add a Promise to get contents of the feed, then parse XML into an object
 	}
@@ -77,14 +74,13 @@ function parseFeed(feedXML) {
 		switch (feedXML.documentElement.tagName) { // check the root element's tag name
 		case "rss": // it's "rss", meaning now we know this is an RSS feed
 			const childrenToFind = {title:0, description:0, link:0, // these are the children we're looking for (in <channel>)
-			image: {url:0, title:0, link:0, description:0}, 
 			item: matching=>matching.map(item=>matchingChildren(item,{title:0,link:0,description:0,pubDate:([matching])=>rfc822Date(matching.textContent),enclosure:([matching])=>{return {url: matching.attributes.getNamedItem("url").value}},guid:([matching])=>{
 				let isPermaLink = matching.attributes.getNamedItem("isPermaLink")
 				return {id: matching.textContent, isPermaLink: isPermaLink?isPermaLink.value:"true"}} // in the guid element, need to check if the isPermaLink attribute exists because otherwise there'll be an error with null.value
 			}))
 			}
 			return matchingChildren(feedXML.documentElement, {channel: childrenToFind}).channel; // <channel> exists but we can just return its contents
-		default: // tag name is not "rss", throw error
+		default: // tag name is not "rss" or "atom", throw error
 			throw "Unknown feed format";
 		}
 	}

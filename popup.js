@@ -15,16 +15,16 @@ chrome.runtime.sendMessage({message: "getFeedContents"}, {}, ({response, lastVie
 	/* function parsing {response} to that message, should be the result of a Promise.allSettled()
 	need to read feeds from promises, put items in chronological order, and display items */
 	if (response.length>1) {
-	let combinedItems=[]; // combinedItems will fill with items from all feeds
-	for (let feed=0;feed<response.length;feed++) { // iterate through every Promise in the array
-		if (response[feed].status === "fulfilled") { // only need to pay attention if the promise is fulfilled
-			let sourceAdded = response[feed].value.item.map(item=>{item.source = response[feed].value.title; item.sourceURL = response[feed].value.link; return item}); // makes each item include a "source" attribute giving the feed it's from
+	let combinedItems=[];
+	for (const feed of response) { // iterate through every Promise in the array
+		if (feed.status === "fulfilled") { // only need to pay attention if the promise is fulfilled
+			let sourceAdded = feed.value.item.map(item=>{item.source = feed.value.title; item.sourceURL = feed.value.link; return item}); // makes each item include a "source" attribute giving the feed it's from, and also sourceURL
 			combinedItems.push(...sourceAdded); // push items from this feed into combinedItems
 		}
 	}
 	combinedItems.sort((item1, item2)=>(item2.pubDate||lastViewed)-(item1.pubDate||lastViewed)); // sort items by pubDate, more recent items first. no pubDate = default to last viewed time
-	// now we just need to display the items in combinedItems
-	const dateFormatter = new Intl.DateTimeFormat([], dateFormat);
+	// now we need to display the items in combinedItems
+	const dateFormatter = new Intl.DateTimeFormat([], dateFormat); // dateFormatter will format dates based on user's chosen options
 	for (let item=0;item<combinedItems.length;item++) { // iterate through every item in combinedItems
 		let itemDisplay = document.createElement("div");
 		if (combinedItems[item].pubDate>lastViewed) itemDisplay.className = "item unread"; // if this item is more recent than last read, give it the unread class
@@ -52,10 +52,10 @@ chrome.runtime.sendMessage({message: "getFeedContents"}, {}, ({response, lastVie
 		if (combinedItems[item].pubDate>lastViewed) itemMaximize.style.display = "none"; // if this is a new item hide maximize button initially
 		else {itemMinimize.style.display = "none"; itemDescription.style.display = "none";} //if this item was already viewed initialize to minimized
 		
-		// set item's URL by using it's <link>. If that does not exist, use it's <guid> if it's a link, and if neither use the feed's URL
+		// set item's URL by using its <link>. If that does not exist, use its <guid> if it's a link, and if neither use the feed's URL
 		const itemURL = combinedItems[item].link || (combinedItems[item].guid.isPermaLink === "true" ? combinedItems[item].guid.id : combinedItems[item].sourceURL);
 		
-		let itemTitle = document.createElement("h2"); // make an h2 with the item's title and link and put it in the meta
+		let itemTitle = document.createElement("h2");
 		if (combinedItems[item].link) {
 			let itemLink = document.createElement("a");
 			itemLink.target = "_blank";
@@ -79,7 +79,7 @@ chrome.runtime.sendMessage({message: "getFeedContents"}, {}, ({response, lastVie
 			let itemEnclosure = makeGhostButton("play", "Open enclosed file", "float-right"); // make a button for opening the enclosed file
 			chrome.permissions.contains({permissions: ["downloads", "downloads.open"]}, downloadsAllowed=>{ // check if the downloads permission is enabled
 				if (downloadsAllowed) {
-					chrome.downloads.search({exists: true, url: combinedItems[item].enclosure.url, state: "complete"}, downloads=>{ // if downloads are allowed, check if there was a successful download of this enclosure
+					chrome.downloads.search({exists: true, url: enclosureURL, state: "complete"}, downloads=>{ // if downloads are allowed, check if there was a successful download of this enclosure
 						if (downloads.length===0) itemEnclosure.addEventListener("click", ()=>window.open(enclosureURL)); // if there are no downloads, make clicking the button open the enclosure in a window
 						else {let downloadID = downloads[0].id; itemEnclosure.addEventListener("click", ()=>chrome.downloads.open(downloadID))} // if there is a download, make clicking the button open the download
 					});
@@ -95,10 +95,10 @@ chrome.runtime.sendMessage({message: "getFeedContents"}, {}, ({response, lastVie
 		let itemDescriptionLinks = itemDescription.getElementsByTagName("a"); // getting all the links in the description to make sure they open in new tabs and are absolute URLs
 		for (const link of itemDescriptionLinks) { // iterate through links (any order)
 			link.target = "_blank"; // link will open in new tab
-			if (link.origin === window.origin) link.href = new URL(link.pathname+link.search+link.hash, itemURL); // if the origin is the same as the extension window, assume link is relative and fix
+			if (link.origin === window.origin) link.href = new URL(link.pathname+link.search+link.hash, itemURL).href; // if the origin is the same as the extension window, assume link is relative and fix
 		}
 		itemDisplay.appendChild(itemDescription);
-		document.getElementById("feed").appendChild(itemDisplay); // add the div to the "feed" element
+		document.getElementById("feed").appendChild(itemDisplay); // add the formed item to the feed element
 	}
 	chrome.storage.sync.set({syndicationLastViewed: Date.now()}); // set last viewed date to now
 	chrome.browserAction.setBadgeText({text: ""}); // make badge empty, user just viewed posts
