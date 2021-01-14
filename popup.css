@@ -4,7 +4,7 @@ body {
 	font-family: sans-serif;
 	font-size: 15px;
 	background-color: #ededed;
-	min-width: 785px;
+	min-width: 780px;
 	min-height: 600px;
 }
 header {
@@ -98,6 +98,10 @@ a:hover, a:focus, a:active {
 	padding: 12px;
 	border-radius: 0 0 8px 8px;
 	background-color: #fefefe;
+	overflow-x: auto;
+}
+.description * {
+	max-width: 100%;
 }
 .unread .description {
 	color: #000;

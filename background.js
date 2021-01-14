@@ -45,12 +45,13 @@ function allFeedContents(syndicationFeeds) {
 }
 
 function xmlPromise(url) { //returns a Promise to get the XML content from the given URL
-	return new Promise(function(resolve) { //creating Promise
+	let antiCache = new URL(url);
+	antiCache.searchParams.append("t", Date.now()); // prevent caching by using a unique query string
+	return new Promise(function(resolve, reject) { //creating Promise
 		let request = new XMLHttpRequest(); //creating XMLHttpRequest
-		request.open("GET", url); // request will get data from url
-		request.onreadystatechange = function() {
-			if (request.readyState === XMLHttpRequest.DONE) resolve(request.responseXML); //when the request is done, resolve the Promise with the response XML
-		}
+		request.open("GET", antiCache); // request will get data from url
+		request.onload = ()=>resolve(request.responseXML); //when the request is done, resolve the Promise with the response XML
+		request.onerror = ()=>reject(null);
 		request.send(); // send request
 	});
 }
